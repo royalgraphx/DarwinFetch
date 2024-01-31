@@ -1,0 +1,30 @@
+[
+    {
+      "beta": false,
+      "build": "23D56",
+      "identifier": "042-78233",
+      "name": "macOS Ventura",
+      "command": "-b Mac-B4831CEBD52A0C4C -m 00000000000000000 download"
+    },
+    {
+      "beta": false,
+      "build": "21A559",
+      "identifier": "042-12345",
+      "name": "macOS Monterey",
+      "command": "-b Mac-ABCDEF1234567890 -m 11111111111111111 download"
+    },
+    {
+      "beta": false,
+      "build": "20C69",
+      "identifier": "001-98765",
+      "name": "macOS Big Sur",
+      "command": "-b Mac-GHIJKL0987654321 -m 22222222222222222 download"
+    },
+    {
+      "beta": false,
+      "build": "19H15",
+      "identifier": "003-54321",
+      "name": "macOS Catalina",
+      "command": "-b Mac-MNOPQR5432109876 -m 33333333333333333 download"
+    }
+]
