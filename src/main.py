@@ -89,9 +89,9 @@ def main():
         clear_screen()
         print("Welcome to DarwinFetch!")
         print("Copyright (c) 2023 RoyalGraphX")
-        print("Python x86_64 Pre-Release 0.0.4\n")
+        print("Python x86_64 Pre-Release 0.0.7\n")
         print("Menu:")
-        print("1. Download Full Installer")
+        print("1. Download Offline Installer")
         print("2. Download RecoveryOS Installer")
         print("3. Update Sources")
         print("4. Settings")
@@ -100,9 +100,9 @@ def main():
         choice = click.prompt("Enter your choice", type=int)
 
         if choice == 1:
-            download_full_installer()
+            download_offline_installer()
         elif choice == 2:
-            download_recoveryos_installer()
+            download_recovery_installer()
         elif choice == 3:
             update_sources()
         elif choice == 4:
@@ -117,15 +117,15 @@ def main():
         click.pause()
 
 # Function to download a full offline installer
-def download_full_installer():
-    """Function to handle downloading the Full Installer."""
+def download_offline_installer():
+    """Function to handle downloading the full Offline Installer."""
     clear_screen()
 
     # Fetch the config dynamically
     config = load_config()
 
-    # Call parse_sources to display available sources based on config
-    parse_sources(config)
+    # Call parse_offline_sources to display available sources and take into account the user config
+    parse_offline_sources(config)
 
     # Get user input to choose a source
     choice = click.prompt("Enter the number of the source to download (or 'c' to cancel)", type=str)
@@ -139,8 +139,8 @@ def download_full_installer():
         # Convert the user input to an integer
         choice = int(choice)
 
-        # Read sources from the JSON file
-        sources_file_path = os.path.join("data", "sources.json")
+        # Read offline sources from the JSON file
+        sources_file_path = os.path.join("data", "offline_sources.json")
 
         if os.path.exists(sources_file_path):
             with open(sources_file_path, 'r') as file:
@@ -194,33 +194,85 @@ def download_full_installer():
     except ValueError:
         print("Invalid input. Please enter a valid source number or 'c' to cancel.")
 
-def download_recoveryos_installer():
-    """Function to handle downloading the RecoveryOS Installer. This is still TO DO."""
+def download_recovery_installer():
+    """Function to handle downloading the RecoveryOS Installer."""
     clear_screen()
 
-    url = "https://example.com/recoveryos_installer.zip"
-    destination = os.path.join("downloads", "recoveryos_installer.zip")
-    download_file(url, destination)
+    # Fetch the config dynamically
+    config = load_config()
 
-    print(f"RecoveryOS Installer downloaded to {destination}.")
+    # Call parse_recovery_sources to display available sources and take into account the user config
+    parse_recovery_sources(config)
+
+    # Get user input to choose a source
+    choice = click.prompt("Enter the number of the source to download (or 'c' to cancel)", type=str)
+
+    # Check if the user wants to cancel
+    if choice.lower() == 'c':
+        print("Download canceled.")
+        return
+
+    try:
+        # Convert the user input to an integer
+        choice = int(choice)
+
+        # Read recovery sources from the JSON file
+        sources_file_path = os.path.join("data", "recovery_sources.json")
+
+        if os.path.exists(sources_file_path):
+            with open(sources_file_path, 'r') as file:
+                sources_data = json.load(file)
+
+            # Validate the user's choice
+            if 1 <= choice <= len(sources_data):
+                selected_source = sources_data[choice - 1]
+
+                # Placeholder code: Print information about the selected source
+                name = selected_source.get("name", "Unknown Name")
+                version = selected_source.get("version", "Unknown Version")
+                build = selected_source.get("build", "Unknown Build")
+                identifier = selected_source.get("identifier", "Unknown Identifier")
+
+                print(f"\nSelected Source: {name} {version} ({build}) - {identifier}")
+
+                # Run the macrecovery.py script with the provided command
+                command = selected_source.get("command", "")
+                if command:
+                    print(f"Running command: {command}")
+
+                    # Execute the command
+                    os.system(f"python src/macrecovery.py {command}")
+
+                    print("Command execution completed.")
+                else:
+                    print("No command available for this source.")
+            else:
+                print("Invalid choice. Please enter a valid source number.")
+        else:
+            print("No sources available.")
+
+    except ValueError:
+        print("Invalid input. Please enter a valid source number or 'c' to cancel.")
 
 # Function to update sources
 def update_sources():
     """Function to handle updating sources."""
     clear_screen()
-    print("Updating sources...")
+    print("Updating offline and recovery sources...")
 
-    # URL for the sources JSON file
-    sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/sources.json"
+    # URL for the offline and recovery sources JSON files
+    offline_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/offline_sources.json"
+    recovery_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/recovery_sources.json"
 
-    # Download the JSON file and save it to 'data/sources.json'
-    destination = os.path.join("data", "sources.json")
-    download_file(sources_url, destination)
+    # Download the offline sources JSON file and save it to 'data/offline_sources.json'
+    offline_destination = os.path.join("data", "offline_sources.json")
+    download_file(offline_sources_url, offline_destination)
+    print(f"Offline sources updated. File saved to {offline_destination}.")
 
-    print(f"Sources updated. File saved to {destination}.")
-
-    # Pause to show the result before clearing the screen again
-    click.pause()
+    # Download the recovery sources JSON file and save it to 'data/recovery_sources.json'
+    recovery_destination = os.path.join("data", "recovery_sources.json")
+    download_file(recovery_sources_url, recovery_destination)
+    print(f"Recovery sources updated. File saved to {recovery_destination}.")
 
 def settings_menu():
     """Function to handle settings."""
@@ -242,13 +294,13 @@ def settings_menu():
         # Pause to show the result before clearing the screen again
         click.pause()
 
-# Updated parse_sources function based on config
-def parse_sources(config):
+# parse_offline_sources function based on config
+def parse_offline_sources(config):
     """Function to parse and display sources."""
     print("Available Sources:")
 
     # Read sources from the JSON file
-    sources_file_path = os.path.join("data", "sources.json")
+    sources_file_path = os.path.join("data", "offline_sources.json")
 
     if os.path.exists(sources_file_path):
         with open(sources_file_path, 'r') as file:
@@ -289,6 +341,40 @@ def parse_sources(config):
                     print()  # Add a blank line between sources if show_full_source_info is true
 
             elif config["show_full_source_info"]:
+                print()  # Add a blank line between sources if show_full_source_info is true
+
+    else:
+        print("No sources available.")
+
+# parse_recovery_sources function based on config
+def parse_recovery_sources(config):
+    """Function to parse and display recoveryOS sources."""
+    print("Available Sources:")
+
+    # Read sources from the JSON file
+    sources_file_path = os.path.join("data", "recovery_sources.json")
+
+    if os.path.exists(sources_file_path):
+        with open(sources_file_path, 'r') as file:
+            sources_data = json.load(file)
+
+        # Iterate over each entry and display the information
+        for index, source in enumerate(sources_data, start=1):
+            name = source.get("name", "Unknown Name")
+            version = source.get("version", "Unknown Version")
+            build = source.get("build", "Unknown Build")
+            identifier = source.get("identifier", "Unknown Identifier")
+            beta = source.get("beta", "Unknown Status")
+            command = source.get("command", "Unknown Command")
+
+            print(f"{index}. {name} {version}")
+
+            if config["show_full_source_info"]:
+                # Display further information for the source
+                print("    Source Information:")
+                for key, value in source.items():
+                    if key not in ["name", "version"]:
+                        print(f"        - {key}: {value}")
                 print()  # Add a blank line between sources if show_full_source_info is true
 
     else:
