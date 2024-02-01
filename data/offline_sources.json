@@ -1,5 +1,54 @@
 [
     {
+      "beta" : true,
+      "build" : "23E5180j",
+      "compatible" : true,
+      "date" : "2024-01-31",
+      "distribution" : "https:\/\/swdist.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/052-42595.English.dist",
+      "identifier" : "052-42595",
+      "name" : "macOS Sonoma beta",
+      "packages" : [
+        {
+          "integrityDataSize" : 104,
+          "integrityDataURL" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/BuildManifest.plist.integrityDataV1",
+          "size" : 9585390,
+          "url" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/BuildManifest.plist"
+        },
+        {
+          "integrityDataSize" : 104,
+          "integrityDataURL" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/MajorOSInfo.pkg.integrityDataV1",
+          "size" : 1409596,
+          "url" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/MajorOSInfo.pkg"
+        },
+        {
+          "integrityDataSize" : 104,
+          "integrityDataURL" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/UpdateBrain.zip.integrityDataV1",
+          "size" : 3804519,
+          "url" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/UpdateBrain.zip"
+        },
+        {
+          "integrityDataSize" : 104,
+          "integrityDataURL" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/InstallInfo.plist.integrityDataV1",
+          "size" : 181,
+          "url" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/InstallInfo.plist"
+        },
+        {
+          "integrityDataSize" : 46112,
+          "integrityDataURL" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/InstallAssistant.pkg.integrityDataV1",
+          "size" : 13404573772,
+          "url" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/InstallAssistant.pkg"
+        },
+        {
+          "integrityDataSize" : 104,
+          "integrityDataURL" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/Info.plist.integrityDataV1",
+          "size" : 5648,
+          "url" : "https:\/\/swcdn.apple.com\/content\/downloads\/12\/17\/052-42595-A_VRB4VPGB8O\/aoovu5ky3lrrxgbywrww6mlinss96zu9rp\/Info.plist"
+        }
+      ],
+      "size" : 13419379106,
+      "version" : "14.4"
+    },
+    {
       "beta" : false,
       "build" : "23D56",
       "compatible" : true,
