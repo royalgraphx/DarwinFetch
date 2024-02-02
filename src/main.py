@@ -2,6 +2,7 @@ import click
 import requests
 import os
 import json
+import hashlib
 from tqdm import tqdm
 
 # Function to clear the screen
@@ -20,6 +21,18 @@ def toggle_show_full_source_info():
     save_config(config)
 
     print(f"Show Full Source Information set to: {config['show_full_source_info']}")
+
+def toggle_show_beta_installers():
+    """Function to toggle the 'show_beta_installers' option in the config."""
+    config = load_config()
+
+    # Toggle the option
+    config["show_beta_installers"] = not config.get("show_beta_installers", False)
+
+    # Save the updated config
+    save_config(config)
+
+    print(f"Show Beta Installers set to: {config['show_beta_installers']}")
 
 def load_config():
     """Function to load the config from data/config.json."""
@@ -89,7 +102,7 @@ def main():
         clear_screen()
         print("Welcome to DarwinFetch!")
         print("Copyright (c) 2023 RoyalGraphX")
-        print("Python x86_64 Pre-Release 0.0.7\n")
+        print("Python x86_64 Pre-Release 0.0.9\n")
         print("Menu:")
         print("1. Download Offline Installer")
         print("2. Download RecoveryOS Installer")
@@ -120,6 +133,11 @@ def main():
 def download_offline_installer():
     """Function to handle downloading the full Offline Installer."""
     clear_screen()
+
+    # Check if offline sources are up to date
+    if not check_sources("offline"):
+        print("Sources are either out of date or don't exist. Consider updating your sources.")
+        return  # Exit the function if offline sources are not up to date
 
     # Fetch the config dynamically
     config = load_config()
@@ -156,6 +174,7 @@ def download_offline_installer():
                 build = selected_source.get("build", "Unknown Build")
                 identifier = selected_source.get("identifier", "Unknown Identifier")
                 date = selected_source.get("date", "Unknown Date")
+                beta = selected_source.get("beta", "Unknown Status")
 
                 print(f"\nSelected Source: {name} {version} ({build}) - {identifier} ({date})")
 
@@ -197,6 +216,11 @@ def download_offline_installer():
 def download_recovery_installer():
     """Function to handle downloading the RecoveryOS Installer."""
     clear_screen()
+
+    # Check if recovery sources are up to date
+    if not check_sources("recovery"):
+        print("Sources are either out of date or don't exist. Consider updating your sources.")
+        return  # Exit the function if recovery sources are not up to date
 
     # Fetch the config dynamically
     config = load_config()
@@ -264,15 +288,60 @@ def update_sources():
     offline_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/offline_sources.json"
     recovery_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/recovery_sources.json"
 
-    # Download the offline sources JSON file and save it to 'data/offline_sources.json'
+    # Check if offline source needs updating
     offline_destination = os.path.join("data", "offline_sources.json")
-    download_file(offline_sources_url, offline_destination)
-    print(f"Offline sources updated. File saved to {offline_destination}.")
+    if not check_sources("offline"):
+        download_file(offline_sources_url, offline_destination)
+        print(f"Offline sources updated. File saved to {offline_destination}.")
+    else:
+        print("Offline sources are already up to date.")
 
-    # Download the recovery sources JSON file and save it to 'data/recovery_sources.json'
+    # Check if recovery source needs updating
     recovery_destination = os.path.join("data", "recovery_sources.json")
-    download_file(recovery_sources_url, recovery_destination)
-    print(f"Recovery sources updated. File saved to {recovery_destination}.")
+    if not check_sources("recovery"):
+        download_file(recovery_sources_url, recovery_destination)
+        print(f"Recovery sources updated. File saved to {recovery_destination}.")
+    else:
+        print("Recovery sources are already up to date.")
+
+# Function to check if the local source file matches the remote source file
+def check_sources(source_type):
+    """Function to check if the local source file matches the remote source file."""
+    # URL for the source JSON file
+    source_url = None
+    local_destination = None
+    if source_type == "offline":
+        source_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/offline_sources.json"
+        local_destination = os.path.join("data", "offline_sources.json")
+    elif source_type == "recovery":
+        source_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/recovery_sources.json"
+        local_destination = os.path.join("data", "recovery_sources.json")
+    else:
+        print("Invalid source type.")
+        return False
+
+    try:
+        # Check if the local file exists
+        if not os.path.exists(local_destination):
+            return False
+
+        # Download the remote source file temporarily
+        response = requests.get(source_url, stream=True)
+        response.raise_for_status()
+
+        # Calculate SHA-256 hash of the downloaded content
+        remote_hash = hashlib.sha256(response.content).hexdigest()
+
+        # Calculate SHA-256 hash of the local source file
+        with open(local_destination, 'rb') as local_file:
+            local_hash = hashlib.sha256(local_file.read()).hexdigest()
+
+        # Compare hashes and return the result
+        return remote_hash == local_hash
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error checking source: {e}")
+        return False
 
 def settings_menu():
     """Function to handle settings."""
@@ -280,13 +349,16 @@ def settings_menu():
         clear_screen()
         print("Settings Menu:")
         print("1. Toggle Show Full Source Information")
-        print("2. Back to Main Menu")
+        print("2. Toggle Show Beta Installers")
+        print("3. Back to Main Menu")
 
         choice = click.prompt("Enter your choice", type=int)
 
         if choice == 1:
             toggle_show_full_source_info()
-        elif choice == 2:
+        if choice == 2:
+            toggle_show_beta_installers()
+        elif choice == 3:
             break
         else:
             print("Invalid choice. Please enter a valid option.")
@@ -314,6 +386,10 @@ def parse_offline_sources(config):
             identifier = source.get("identifier", "Unknown Identifier")
             date = source.get("date", "Unknown Date")
             beta = source.get("beta", "Unknown Status")
+
+            # Skip displaying entries with beta: true if show_beta_installers is False
+            if not config["show_beta_installers"] and beta:
+                continue
 
             print(f"{index}. {name} {version}")
             # print(f"    Build: {build} Released:{date} Beta: {beta}")
@@ -366,6 +442,10 @@ def parse_recovery_sources(config):
             identifier = source.get("identifier", "Unknown Identifier")
             beta = source.get("beta", "Unknown Status")
             command = source.get("command", "Unknown Command")
+
+            # Skip displaying entries with beta: true if show_beta_installers is False
+            if not config["show_beta_installers"] and beta:
+                continue
 
             print(f"{index}. {name} {version}")
 
