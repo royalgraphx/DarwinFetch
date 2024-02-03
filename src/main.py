@@ -89,6 +89,16 @@ def sort_packages_by_size(packages):
     """Sorts the packages by size in descending order."""
     return sorted(packages, key=lambda x: x.get("size", 0), reverse=True)
 
+def pycheck():
+    """Function to check if python3 is available, otherwise fallback to python."""
+    try:
+        # Try running python3 to see if it's available
+        os.system("python3 -V")
+        return "python3"
+    except Exception:
+        # If python3 is not available, use python
+        return "python"
+
 @click.command()
 def main():
     """Main entry point for DarwinFetch."""
@@ -102,7 +112,7 @@ def main():
         clear_screen()
         print("Welcome to DarwinFetch!")
         print("Copyright (c) 2023 RoyalGraphX")
-        print("Python x86_64 Pre-Release 0.0.9\n")
+        print("Python x86_64 Pre-Release 0.0.10\n")
         print("Menu:")
         print("1. Download Offline Installer")
         print("2. Download RecoveryOS Installer")
@@ -264,8 +274,11 @@ def download_recovery_installer():
                 if command:
                     print(f"Running command: {command}")
 
+                     # Determine the Python command using pycheck
+                    python_command = pycheck()
+
                     # Execute the command
-                    os.system(f"python src/macrecovery.py {command}")
+                    os.system(f"{python_command} src/macrecovery.py {command}")
 
                     print("Command execution completed.")
                 else:
