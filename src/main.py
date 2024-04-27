@@ -1,14 +1,23 @@
-import click
-import requests
 import os
 import json
+import py7zr
+import click
+import shutil
+import zipfile
 import hashlib
+import requests
+import subprocess
 from tqdm import tqdm
+from urllib.parse import unquote_plus
 
 # Function to clear the screen
 def clear_screen():
     """Function to reset the screen"""
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def URLdec(encoded_string):
+    """Function to decode URL-encoded string."""
+    return unquote_plus(encoded_string)
 
 def toggle_show_full_source_info():
     """Function to toggle the 'show_full_source_info' option in the config."""
@@ -34,10 +43,22 @@ def toggle_show_beta_installers():
 
     print(f"Show Beta Installers set to: {config['show_beta_installers']}")
 
+def toggle_bypass_update_check():
+    """Function to toggle the 'bypass_update_check' option in the config."""
+    config = load_config()
+
+    # Toggle the option
+    config["bypass_update_check"] = not config.get("bypass_update_check", False)
+
+    # Save the updated config
+    save_config(config)
+
+    print(f"Bypass Sources Update Check set to: {config['bypass_update_check']}")
+
 def load_config():
     """Function to load the config from data/config.json."""
     config_path = os.path.join("data", "config.json")
-    config = {}
+    config = {"show_full_source_info": False, "show_beta_installers": False, "bypass_update_check": False}
 
     if os.path.exists(config_path):
         with open(config_path, 'r') as file:
@@ -59,7 +80,7 @@ def save_config(config):
 
     print("Config saved successfully.")
 
-# Function to download a file from a given URL
+# Function to download a file from a given URL via HTTP/HTTPS
 def download_file(url, destination):
     try:
         response = requests.get(url, stream=True)
@@ -82,7 +103,7 @@ def download_file(url, destination):
 # Function to extract the filename from a given URL
 def extract_filename_from_url(url):
     """Extracts the filename from a given URL."""
-    return os.path.basename(url)
+    return URLdec(os.path.basename(url))
 
 # Function to sort packages by size
 def sort_packages_by_size(packages):
@@ -99,6 +120,44 @@ def pycheck():
         # If python3 is not available, use python
         return "python"
 
+# Function to unpack files in a given folder
+def unpacker(folder_path):
+    """Function to unpack .7z and .zip files in a given folder and delete them after unpacking."""
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            # Skip hidden files (e.g., .DS_Store)
+            if file.startswith('.'):
+                continue
+            
+            file_path = os.path.join(root, file)
+            extraction_path = os.path.splitext(file_path)[0]
+
+            # Create a directory for extraction
+            os.makedirs(extraction_path, exist_ok=True)
+
+            try:
+                if file.endswith(".zip"):
+                    # Unpack .zip file using zipfile
+                    with zipfile.ZipFile(file_path, 'r') as zip_ref:
+                        zip_ref.extractall(extraction_path)
+
+                elif file.endswith(".7z"):
+                    # Unpack .7z file using py7zr
+                    with py7zr.SevenZipFile(file_path, mode='r') as z:
+                        z.extractall(extraction_path)
+
+                # Remove the original file after unpacking
+                os.remove(file_path)
+
+                print(f"Successfully unpacked: {file}")
+
+            except zipfile.BadZipFile:
+                print(f"Error: {file} is not a valid zip file.")
+            except py7zr.exceptions.Bad7zFile:
+                print(f"Error: {file} is not a valid 7z file.")
+            except Exception as e:
+                print(f"Error unpacking {file}: {e}")
+
 @click.command()
 def main():
     """Main entry point for DarwinFetch."""
@@ -112,13 +171,14 @@ def main():
         clear_screen()
         print("Welcome to DarwinFetch!")
         print("Copyright (c) 2023 RoyalGraphX")
-        print("Python x86_64 Pre-Release 0.0.10\n")
+        print("Python x86_64 Pre-Release 0.0.14\n")
         print("Menu:")
         print("1. Download Offline Installer")
         print("2. Download RecoveryOS Installer")
-        print("3. Update Sources")
-        print("4. Settings")
-        print("5. Exit")
+        print("3. Download PowerPC Installer")
+        print("4. Update Sources")
+        print("5. Settings")
+        print("6. Exit")
 
         choice = click.prompt("Enter your choice", type=int)
 
@@ -127,10 +187,12 @@ def main():
         elif choice == 2:
             download_recovery_installer()
         elif choice == 3:
-            update_sources()
+            download_powerpc_installer()
         elif choice == 4:
-            settings_menu()
+            update_sources()
         elif choice == 5:
+            settings_menu()
+        elif choice == 6:
             print("Exiting. Goodbye!")
             break
         else:
@@ -144,13 +206,13 @@ def download_offline_installer():
     """Function to handle downloading the full Offline Installer."""
     clear_screen()
 
-    # Check if offline sources are up to date
-    if not check_sources("offline"):
-        print("Sources are either out of date or don't exist. Consider updating your sources.")
-        return  # Exit the function if offline sources are not up to date
-
-    # Fetch the config dynamically
+    # Check if bypass update check setting is enabled
     config = load_config()
+    if not config["bypass_update_check"]:
+        # Perform update check logic
+        if not check_sources("offline"):
+            print("Sources are either out of date or don't exist. Consider updating your sources.")
+            return  # Exit the function if offline sources are not up to date
 
     # Call parse_offline_sources to display available sources and take into account the user config
     parse_offline_sources(config)
@@ -227,13 +289,13 @@ def download_recovery_installer():
     """Function to handle downloading the RecoveryOS Installer."""
     clear_screen()
 
-    # Check if recovery sources are up to date
-    if not check_sources("recovery"):
-        print("Sources are either out of date or don't exist. Consider updating your sources.")
-        return  # Exit the function if recovery sources are not up to date
-
-    # Fetch the config dynamically
+    # Check if bypass update check setting is enabled
     config = load_config()
+    if not config["bypass_update_check"]:
+        # Perform update check logic
+        if not check_sources("recovery"):
+            print("Sources are either out of date or don't exist. Consider updating your sources.")
+            return  # Exit the function if recovery sources are not up to date
 
     # Call parse_recovery_sources to display available sources and take into account the user config
     parse_recovery_sources(config)
@@ -291,31 +353,132 @@ def download_recovery_installer():
     except ValueError:
         print("Invalid input. Please enter a valid source number or 'c' to cancel.")
 
+def download_powerpc_installer():
+    """Function to handle downloading the PowerPC Installer."""
+    clear_screen()
+
+    # Check if bypass update check setting is enabled
+    config = load_config()
+    if not config["bypass_update_check"]:
+        # Perform update check logic
+        if not check_sources("offline"):
+            print("Sources are either out of date or don't exist. Consider updating your sources.")
+            return  # Exit the function if offline sources are not up to date
+
+    # Call parse_powerpc_sources to display available sources and take into account the user config
+    parse_powerpc_sources(config)
+
+    # Get user input to choose a source
+    choice = click.prompt("Enter the number of the source to download (or 'c' to cancel)", type=str)
+
+    # Check if the user wants to cancel
+    if choice.lower() == 'c':
+        print("Download canceled.")
+        return
+
+    try:
+        # Convert the user input to an integer
+        choice = int(choice)
+
+        # Read PowerPC sources from the JSON file
+        sources_file_path = os.path.join("data", "ppc_sources.json")
+
+        if os.path.exists(sources_file_path):
+            with open(sources_file_path, 'r') as file:
+                sources_data = json.load(file)
+
+            # Validate the user's choice
+            if 1 <= choice <= len(sources_data):
+                selected_source = sources_data[choice - 1]
+                name = selected_source.get("name", "Unknown Name")
+                version = selected_source.get("version", "Unknown Version")
+                build = selected_source.get("build", "Unknown Build")
+                identifier = selected_source.get("identifier", "Unknown Identifier")
+                method = selected_source.get("method", "Unknown Method")
+                packages = selected_source.get("packages", [])
+
+                print(f"\nSelected Source: {name} {version} ({build}) - {identifier}")
+
+                if packages:
+                    # Create a folder to save the downloaded files
+                    folder_name = f"{version}_{build}"
+                    folder_path = os.path.join("downloads", folder_name)
+                    os.makedirs(folder_path, exist_ok=True)
+
+                    for package in packages:
+                        package_name = package.get("name", "Unknown Package")
+                        package_url = package.get("url")
+
+                        if package_url:
+                            # Extract filename from package URL
+                            filename = extract_filename_from_url(package_url)
+
+                            # Print initialization text
+                            print(f"\nInitializing download of {package_name}")
+
+                            # Construct destination path
+                            destination = os.path.join(folder_path, filename)
+
+                            # Download the package file
+                            download_file(package_url, destination)
+                        else:
+                            print(f"No URL found for package: {package_name}")
+
+                    # Begin cleaning folder for downloaded files                    
+                    print(f"Unpacking files downloaded from sources...")
+                    unpacker(folder_path)
+
+                else:
+                    print("No packages available for this source.")
+
+            else:
+                print("Invalid choice. Please enter a valid source number.")
+        else:
+            print("No sources available.")
+
+    except ValueError:
+        print("Invalid input. Please enter a valid source number or 'c' to cancel.")
+
 # Function to update sources
 def update_sources():
     """Function to handle updating sources."""
     clear_screen()
-    print("Updating offline and recovery sources...")
+    print("Updating offline, recovery, and PowerPC sources...")
 
-    # URL for the offline and recovery sources JSON files
-    offline_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/offline_sources.json"
-    recovery_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/recovery_sources.json"
-
-    # Check if offline source needs updating
-    offline_destination = os.path.join("data", "offline_sources.json")
-    if not check_sources("offline"):
-        download_file(offline_sources_url, offline_destination)
-        print(f"Offline sources updated. File saved to {offline_destination}.")
+    # Check if the bypass update check setting is enabled
+    config = load_config()
+    if config["bypass_update_check"]:
+        print("Bypassing sources update check as per settings.")
     else:
-        print("Offline sources are already up to date.")
+        # Perform the update check
+        # URL for the offline, recovery, and PowerPC sources JSON files
+        offline_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/offline_sources.json"
+        recovery_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/recovery_sources.json"
+        powerpc_sources_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/ppc_sources.json"
 
-    # Check if recovery source needs updating
-    recovery_destination = os.path.join("data", "recovery_sources.json")
-    if not check_sources("recovery"):
-        download_file(recovery_sources_url, recovery_destination)
-        print(f"Recovery sources updated. File saved to {recovery_destination}.")
-    else:
-        print("Recovery sources are already up to date.")
+        # Check if offline source needs updating
+        offline_destination = os.path.join("data", "offline_sources.json")
+        if not check_sources("offline"):
+            download_file(offline_sources_url, offline_destination)
+            print(f"Offline sources updated. File saved to {offline_destination}.")
+        else:
+            print("Offline sources are already up to date.")
+
+        # Check if recovery source needs updating
+        recovery_destination = os.path.join("data", "recovery_sources.json")
+        if not check_sources("recovery"):
+            download_file(recovery_sources_url, recovery_destination)
+            print(f"Recovery sources updated. File saved to {recovery_destination}.")
+        else:
+            print("Recovery sources are already up to date.")
+        
+        # Check if PowerPC source needs updating
+        powerpc_destination = os.path.join("data", "ppc_sources.json")
+        if not check_sources("powerpc"):
+            download_file(powerpc_sources_url, powerpc_destination)
+            print(f"PowerPC sources updated. File saved to {powerpc_destination}.")
+        else:
+            print("PowerPC sources are already up to date.")
 
 # Function to check if the local source file matches the remote source file
 def check_sources(source_type):
@@ -329,6 +492,9 @@ def check_sources(source_type):
     elif source_type == "recovery":
         source_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/recovery_sources.json"
         local_destination = os.path.join("data", "recovery_sources.json")
+    elif source_type == "powerpc":
+        source_url = "https://raw.githubusercontent.com/royalgraphx/DarwinFetch/main/data/ppc_sources.json"
+        local_destination = os.path.join("data", "ppc_sources.json")
     else:
         print("Invalid source type.")
         return False
@@ -361,17 +527,21 @@ def settings_menu():
     while True:
         clear_screen()
         print("Settings Menu:")
-        print("1. Toggle Show Full Source Information")
-        print("2. Toggle Show Beta Installers")
-        print("3. Back to Main Menu")
+        config = load_config()
+        print("1. Toggle Show Full Source Information (Currently:", "Enabled)" if config["show_full_source_info"] else "Disabled)")
+        print("2. Toggle Show Beta Installers (Currently:", "Enabled)" if config["show_beta_installers"] else "Disabled)")
+        print("3. Toggle Bypass Sources Update Check (Currently:", "Enabled)" if config["bypass_update_check"] else "Disabled)")
+        print("4. Back to Main Menu")
 
         choice = click.prompt("Enter your choice", type=int)
 
         if choice == 1:
             toggle_show_full_source_info()
-        if choice == 2:
+        elif choice == 2:
             toggle_show_beta_installers()
         elif choice == 3:
+            toggle_bypass_update_check()
+        elif choice == 4:
             break
         else:
             print("Invalid choice. Please enter a valid option.")
@@ -472,6 +642,52 @@ def parse_recovery_sources(config):
 
     else:
         print("No sources available.")
+
+# parse_powerpc_sources function based on config
+def parse_powerpc_sources(config):
+    """Function to parse and display PowerPC sources."""
+    print("Available PowerPC Sources:")
+
+    # Read sources from the JSON file
+    sources_file_path = os.path.join("data", "ppc_sources.json")
+
+    if os.path.exists(sources_file_path):
+        with open(sources_file_path, 'r') as file:
+            sources_data = json.load(file)
+
+        # Iterate over each entry and display the information
+        for index, source in enumerate(sources_data, start=1):
+            name = source.get("name", "Unknown Name")
+            version = source.get("version", "Unknown Version")
+            build = source.get("build", "Unknown Build")
+            identifier = source.get("identifier", "Unknown Identifier")
+            beta = source.get("beta", "Unknown Status")
+            method = source.get("method", "Unknown Method")
+            packages = source.get("packages", [])
+
+            # Skip displaying entries with beta: true if show_beta_installers is False
+            if not config["show_beta_installers"] and beta:
+                continue
+
+            print(f"{index}. {name} {version}")
+
+            if config["show_full_source_info"]:
+                # Display further information for the source
+                print(f"    Build: {build}, Identifier: {identifier}")
+
+                # Display packages within the source entry
+                if packages:
+                    print("    Packages:")
+                    for package in packages:
+                        package_name = package.get("name", "Unknown Name")
+                        package_url = package.get("url", "Unknown URL")
+                        print(f"        - {package_name}: {package_url}")
+                else:
+                    print("    No packages available for this source.")
+                print()  # Add a blank line between sources if show_full_source_info is true
+
+    else:
+        print("No PowerPC sources available.")
 
 if __name__ == "__main__":
     main()
