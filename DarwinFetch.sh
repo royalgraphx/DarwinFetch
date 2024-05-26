@@ -1,7 +1,16 @@
 #!/bin/bash
 
 # Script version
-VERSION="0.1.0"
+VERSION="0.1.1"
+
+# Define the name of the virtual environment directory
+VENV_DIR=".DFetchVEnv"
+
+# Function to activate the virtual environment
+activate_venv() {
+    source "$1/bin/activate"
+    echo "Activated virtual environment: $1"
+}
 
 check_python_version() {
     # Check if Python 3 is available and its version
@@ -65,6 +74,27 @@ check_apt_package() {
     fi
 }
 
+check_requirements_import() {
+# Function to check if all modules in requirements.txt can be imported
+# Can only be called after check_python_version has been used
+    if [ ! -f "requirements.txt" ]; then
+        echo "requirements.txt not found."
+        return 1
+    fi
+
+    while IFS= read -r module; do
+        module_name=$(echo $module | sed 's/==.*//')
+        $(python_executable) -c "import $module_name" 2>/dev/null
+        if [ $? -ne 0 ]; then
+            echo "Failed to import module: $module_name"
+            return 1
+        fi
+    done < "requirements.txt"
+    
+    echo "All modules in requirements.txt imported successfully."
+    return 0
+}
+
 install_package() {
     # Install a package based on the package manager
     if [ -f /etc/arch-release ]; then
@@ -82,8 +112,8 @@ install_packages_brew() {
     brew install "$@" || { echo "Failed to install package using Homebrew"; exit 1; }
 }
 
-install_packages_pip() {
-    # Install packages using pip or pip3
+install_requirements_pip() {
+    # Install packages in requirements.txt using pip or pip3
     if command -v pip3 >/dev/null 2>&1; then
         pip3 install -r requirements.txt || { echo "Failed to install all required packages using pip3"; exit 1; }
     elif command -v pip >/dev/null 2>&1; then
@@ -141,10 +171,31 @@ if [[ "$(uname)" == "Linux" ]]; then
 
         check_python_version
 
-        # Read requirements.txt and check if each package is installed
-        while IFS= read -r package; do
-            package_exists "$package"
-        done < requirements.txt
+        # Check if a virtual environment already exists in the current directory
+        if [ -d "$VENV_DIR" ]; then
+            echo "Virtual environment '$VENV_DIR' already exists."
+            activate_venv "$VENV_DIR"
+        else
+            # Create the virtual environment
+            echo "Creating virtual environment '$VENV_DIR'."
+            $(python_executable) -m venv "$VENV_DIR"
+            
+            # Check if the virtual environment was created successfully
+            if [ -d "$VENV_DIR" ]; then
+                echo "Virtual environment '$VENV_DIR' created successfully."
+                activate_venv "$VENV_DIR"
+            else
+                echo "Failed to create virtual environment '$VENV_DIR'."
+                exit 1
+            fi
+        fi
+
+        # Check if all modules can be imported and handle failure if necessary
+        check_pip
+        check_requirements_import
+        if [ $? -ne 0 ]; then
+            install_requirements_pip
+        fi
 
         # sleep 5
 
@@ -154,10 +205,31 @@ if [[ "$(uname)" == "Linux" ]]; then
 
         check_python_version
 
-        # Read requirements.txt and check if each package is installed
-        while IFS= read -r package; do
-            package_exists "$package"
-        done < requirements.txt
+        # Check if a virtual environment already exists in the current directory
+        if [ -d "$VENV_DIR" ]; then
+            echo "Virtual environment '$VENV_DIR' already exists."
+            activate_venv "$VENV_DIR"
+        else
+            # Create the virtual environment
+            echo "Creating virtual environment '$VENV_DIR'."
+            $(python_executable) -m venv "$VENV_DIR"
+            
+            # Check if the virtual environment was created successfully
+            if [ -d "$VENV_DIR" ]; then
+                echo "Virtual environment '$VENV_DIR' created successfully."
+                activate_venv "$VENV_DIR"
+            else
+                echo "Failed to create virtual environment '$VENV_DIR'."
+                exit 1
+            fi
+        fi
+
+        # Check if all modules can be imported and handle failure if necessary
+        check_pip
+        check_requirements_import
+        if [ $? -ne 0 ]; then
+            install_requirements_pip
+        fi
 
         # sleep 5
 
@@ -172,8 +244,13 @@ elif [[ "$(uname)" == "Darwin" ]]; then
 
     check_homebrew
     check_python_version
+    
+    # Check if all modules can be imported and handle failure if necessary
     check_pip
-    install_packages_pip
+    check_requirements_import
+    if [ $? -ne 0 ]; then
+        install_requirements_pip
+    fi
 
     # sleep 5
 

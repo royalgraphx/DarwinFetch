@@ -1,3 +1,12 @@
+# -----------------------------------------------------------------------------
+# 
+# DarwinFetch - Allows for fetching recoveryOS, PowerPC, and Full Offline installer images for macOS
+# 
+# Copyright (c) 2024 RoyalGraphX - BSD 3-Clause License
+# See LICENSE file for more detailed information.
+# 
+# -----------------------------------------------------------------------------
+
 import os
 import json
 import py7zr
@@ -5,10 +14,46 @@ import click
 import shutil
 import zipfile
 import hashlib
+import platform
 import requests
 import subprocess
 from tqdm import tqdm
 from urllib.parse import unquote_plus
+
+# Function to determine the host operating system
+def get_host_os():
+    """Determine the host operating system."""
+    return platform.system()
+
+# Function to get a pretty-printed version of the host OS with detailed information
+def host_os_pretty():
+    """Get a pretty-printed version of the host OS with detailed information."""
+    os_type = get_host_os()
+    
+    if os_type == "Linux":
+        # Read the os-release file to get distribution information
+        try:
+            with open('/etc/os-release') as f:
+                lines = f.readlines()
+                os_info = {}
+                for line in lines:
+                    key, value = line.strip().split('=', 1)
+                    os_info[key] = value.strip('"')
+                pretty_name = os_info.get('PRETTY_NAME', 'Linux')
+                return pretty_name
+        except Exception:
+            return "Linux"
+    
+    elif os_type == "Darwin":
+        try:
+            # Use sw_vers to get macOS version details
+            sw_vers_output = subprocess.check_output(["sw_vers"], text=True).strip().split("\n")
+            version_info = {line.split(":")[0].strip(): line.split(":")[1].strip() for line in sw_vers_output}
+            return f"Darwin {version_info.get('ProductVersion', '')} ({version_info.get('BuildVersion', '')})"
+        except Exception:
+            return "Darwin"
+    
+    return os_type
 
 # Function to clear the screen
 def clear_screen():
@@ -170,8 +215,8 @@ def main():
     while True:
         clear_screen()
         print("Welcome to DarwinFetch!")
-        print("Copyright (c) 2023 RoyalGraphX")
-        print("Python x86_64 Pre-Release 0.0.14\n")
+        print("Copyright (c) 2024 RoyalGraphX")
+        print(f"Python x86_64 Pre-Release 0.0.15 for {host_os_pretty()}\n")
         print("Menu:")
         print("1. Download Offline Installer")
         print("2. Download RecoveryOS Installer")
