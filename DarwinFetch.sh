@@ -74,6 +74,26 @@ check_apt_package() {
     fi
 }
 
+check_ensurepip() {
+    # Array of typically installed files from the providing package
+    local files=(
+        "/usr/lib/python3.12/ensurepip/__init__.py"
+        "/usr/lib/python3.12/ensurepip/__main__.py"
+        "/usr/lib/python3.12/ensurepip/_uninstall.py"
+    )
+
+    # Loop through each file and check if it exists
+    for file in "${files[@]}"; do
+        if [ ! -f "$file" ]; then
+            echo "ensurepip is not installed: $file is missing."
+            return 1
+        fi
+    done
+
+    echo "ensurepip is installed."
+    return 0
+}
+
 check_requirements_import() {
 # Function to check if all modules in requirements.txt can be imported
 # Can only be called after check_python_version has been used
@@ -204,6 +224,8 @@ if [[ "$(uname)" == "Linux" ]]; then
         echo "Running on Debian-based Linux..."
 
         check_python_version
+
+        check_ensurepip || install_package "python3.12-venv"
 
         # Check if a virtual environment already exists in the current directory
         if [ -d "$VENV_DIR" ]; then
