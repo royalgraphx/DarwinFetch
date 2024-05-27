@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script version
-VERSION="0.1.1"
+VERSION="0.1.2"
 
 # Define the name of the virtual environment directory
 VENV_DIR=".DFetchVEnv"
@@ -265,8 +265,29 @@ elif [[ "$(uname)" == "Darwin" ]]; then
     echo "Running on macOS..."
 
     check_homebrew
-    check_python_version
     
+    # Check which python exec to use
+    check_python_version
+
+    # Check if a virtual environment already exists in the current directory
+    if [ -d "$VENV_DIR" ]; then
+        echo "Virtual environment '$VENV_DIR' already exists."
+        activate_venv "$VENV_DIR"
+    else
+        # Create the virtual environment
+        echo "Creating virtual environment '$VENV_DIR'."
+        $(python_executable) -m venv "$VENV_DIR"
+            
+        # Check if the virtual environment was created successfully
+        if [ -d "$VENV_DIR" ]; then
+            echo "Virtual environment '$VENV_DIR' created successfully."
+            activate_venv "$VENV_DIR"
+        else
+            echo "Failed to create virtual environment '$VENV_DIR'."
+            exit 1
+        fi
+    fi
+
     # Check if all modules can be imported and handle failure if necessary
     check_pip
     check_requirements_import

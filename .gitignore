@@ -26,5 +26,5 @@ Temporary Items
 .apdisk
 
 # Python Directories
-venv/
+.DFetchVenv/
 downloads/
