@@ -225,7 +225,7 @@ if [[ "$(uname)" == "Linux" ]]; then
 
         check_python_version
 
-        check_ensurepip || install_package "python3.12-venv"
+        check_ensurepip || install_package "python3-venv"
 
         # Check if a virtual environment already exists in the current directory
         if [ -d "$VENV_DIR" ]; then
