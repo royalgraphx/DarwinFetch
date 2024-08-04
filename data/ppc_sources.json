@@ -25,7 +25,7 @@
       "packages" : [
         {
           "name": "Apple Mac OS X 10.5.6 Leopard Install Disk.7z",
-          "url" : "https://dl.bobpony.com/macos/leopard/Mac%20OS%20X%2010.5.6.7z"
+          "url" : "https://dl.bobpony.com/macos/10.5/Mac%20OS%20X%2010.5.6.7z"
         }
       ]
     },
@@ -160,7 +160,7 @@
       "packages" : [
         {
           "name": "Apple Mac OS X 10.4.8 Tiger Install Disk.zip",
-          "url" : "https://dl.bobpony.com/macos/tiger/Mac%20OS%20X%2010.4.8.7z"
+          "url" : "https://dl.bobpony.com/macos/10.4/Mac%20OS%20X%2010.4.8.7z"
         }
       ]
     },
@@ -175,19 +175,19 @@
       "packages" : [
         {
           "name": "Apple Mac OS X 10.4 Tiger Install Disk 1.zip",
-          "url" : "https://dl.bobpony.com/macos/tiger/Tiger_CD1.toast_.zip"
+          "url" : "https://dl.bobpony.com/macos/10.4/Tiger_CD1.toast_.zip"
         },
         {
           "name": "Apple Mac OS X 10.4 Tiger Install Disk 2.zip",
-          "url" : "https://dl.bobpony.com/macos/tiger/Tiger_CD2.toast_.zip"
+          "url" : "https://dl.bobpony.com/macos/10.4/Tiger_CD2.toast_.zip"
         },
         {
           "name": "Apple Mac OS X 10.4 Tiger Install Disk 3.zip",
-          "url" : "https://dl.bobpony.com/macos/tiger/Tiger_CD3.toast_.zip"
+          "url" : "https://dl.bobpony.com/macos/10.4/Tiger_CD3.toast_.zip"
         },
         {
           "name": "Apple Mac OS X 10.4 Tiger Install Disk 4.zip",
-          "url" : "https://dl.bobpony.com/macos/tiger/Tiger_CD4.toast_.zip"
+          "url" : "https://dl.bobpony.com/macos/10.4/Tiger_CD4.toast_.zip"
         }
       ]
     },
@@ -262,15 +262,15 @@
       "packages" : [
         {
           "name": "Apple Mac OS X 10.3 Panther Install Disk 1.zip",
-          "url" : "https://dl.bobpony.com/macos/panther/Panther_CD1.toast_.zip"
+          "url" : "https://dl.bobpony.com/macos/10.3/Panther_CD1.toast_.zip"
         },
         {
           "name": "Apple Mac OS X 10.3 Panther Install Disk 2.zip",
-          "url" : "https://dl.bobpony.com/macos/panther/Panther_CD2.toast_.zip"
+          "url" : "https://dl.bobpony.com/macos/10.3/Panther_CD2.toast_.zip"
         },
         {
           "name": "Apple Mac OS X 10.3 Panther Install Disk 3.zip",
-          "url" : "https://dl.bobpony.com/macos/panther/Panther_CD3.toast__0.zip"
+          "url" : "https://dl.bobpony.com/macos/10.3/Panther_CD3.toast__0.zip"
         }
       ]
     },
@@ -300,7 +300,7 @@
       "packages" : [
         {
           "name": "Apple Mac OS X 10.2 Jaguar.7z",
-          "url" : "https://dl.bobpony.com/macos/jaguar/Apple%20Mac%20OS%20X%2010.2%20%2810.2.6C115%29.7z"
+          "url" : "https://dl.bobpony.com/macos/10.2/Apple%20Mac%20OS%20X%2010.2%20%2810.2.6C115%29.7z"
         }
       ]
     },
@@ -330,7 +330,7 @@
       "packages" : [
         {
           "name": "Apple Mac OS X 10.1 Puma.7z",
-          "url" : "https://dl.bobpony.com/macos/puma/Apple%20Mac%20OS%20X%2010.1%20%2810.1.5J34%29.7z"
+          "url" : "https://dl.bobpony.com/macos/10.1/Apple%20Mac%20OS%20X%2010.1%20%2810.1.5J34%29.7z"
         }
       ]
     },
@@ -435,7 +435,7 @@
       "packages" : [
         {
           "name": "Apple Mac OS X 10.0.3 Cheetah.7z",
-          "url" : "https://dl.bobpony.com/macos/cheetah/Mac%20OS%20X%2010.0.3.7z"
+          "url" : "https://dl.bobpony.com/macos/10.0/Mac%20OS%20X%2010.0.3.7z"
         }
       ]
     },
