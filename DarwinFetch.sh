@@ -122,7 +122,7 @@ install_package() {
     elif [ -f /etc/debian_version ]; then
         sudo apt-get install -y "$1" || { echo "Failed to install $1"; exit 1; }
     else
-        echo "Unsupported Linux distribution."
+        echo "Unsupported Linux distribution. The current supported Linux distributions are Arch Linux, Debian and Fedora (or its derivatives)"
         exit 1
     fi
 }
@@ -159,11 +159,19 @@ package_exists() {
         else
             echo "python3-$1 is installed."
         fi
-    else
-        echo "Unsupported Linux distribution."
+    elif [ -f /etc/fedora-release ]; then
+        if ! check_dnf_package "python3-$1"; then
+            echo "python3-$1 is not installed. Installing..."
+            install_package "python3-$1"
+        else
+            echo "python3-$1 is insatlled."
+            fi
+else
+        echo "Unsupported Linux distribution. The current supported Linux distributions are Arch Linux, Debian and Fedora (or its derivatives)"
         exit 1
     fi
 }
+
 
 python_executable() {
     # Determine the appropriate Python executable
@@ -246,6 +254,33 @@ if [[ "$(uname)" == "Linux" ]]; then
             fi
         fi
 
+elif [ -f /etc/fedora-release ]; then
+        # Fedora Linux commands or tasks
+        echo "Running on Fedora Linux..."
+
+        check_python_version
+
+        check_pip || install_package "python3-pip"
+
+        # Check if a virtual environment already exists in the current directory
+        if [ -d "$VENV_DIR" ]; then
+            echo "Virtual environment '$VENV_DIR' already exists."
+            activate_venv "$VENV_DIR"
+        else
+            # Create the virtual environment
+            echo "Creating virtual environment '$VENV_DIR'."
+            $(python_executable) -m venv "$VENV_DIR"
+            
+            # Check if the virtual environment was created successfully
+            if [ -d "$VENV_DIR" ]; then
+                echo "Virtual environment '$VENV_DIR' created successfully."
+                activate_venv "$VENV_DIR"
+            else
+                echo "Failed to create virtual environment '$VENV_DIR'."
+                exit 1
+            fi
+        fi
+        
         # Check if all modules can be imported and handle failure if necessary
         check_pip
         check_requirements_import
@@ -257,7 +292,7 @@ if [[ "$(uname)" == "Linux" ]]; then
 
     else
         # Unsupported Linux distribution
-        echo "Unsupported Linux distribution."
+        echo "Unsupported Linux distribution. The current supported Linux distributions are Arch Linux, Debian and Fedora (or its derivatives)"
         exit 1
     fi
 elif [[ "$(uname)" == "Darwin" ]]; then
@@ -300,11 +335,11 @@ elif [[ "$(uname)" == "Darwin" ]]; then
 elif [[ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]]; then
     # Windows-specific commands or tasks
     echo "Running on Windows..."
-    echo "Unsupported operating system."
+    echo "Unsupported operating system. Only macOS, Arch Linux, Debian and Fedora are supported."
     exit 1
 else
     # Unsupported operating system
-    echo "Unsupported operating system."
+    echo "Unsupported operating system. Only macOS, Arch Linux, Debian and Fedora are supported."
     exit 1
 fi
 
