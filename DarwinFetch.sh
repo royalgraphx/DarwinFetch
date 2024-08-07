@@ -121,6 +121,8 @@ install_package() {
         sudo pacman -S "$1" --noconfirm || { echo "Failed to install $1"; exit 1; }
     elif [ -f /etc/debian_version ]; then
         sudo apt-get install -y "$1" || { echo "Failed to install $1"; exit 1; }
+    elif [ -f /etc/fedora-release ]; then
+        sudo dnf install -y "$1" || { echo "Failed to install $1"; exit 1; }
     else
         echo "Unsupported Linux distribution. The current supported Linux distributions are Arch Linux, Debian and Fedora (or its derivatives)"
         exit 1
