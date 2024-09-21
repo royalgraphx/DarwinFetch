@@ -256,6 +256,13 @@ if [[ "$(uname)" == "Linux" ]]; then
             fi
         fi
 
+        # Check if all modules can be imported and handle failure if necessary
+        check_pip
+        check_requirements_import
+        if [ $? -ne 0 ]; then
+            install_requirements_pip
+        fi
+
 elif [ -f /etc/fedora-release ]; then
         # Fedora Linux commands or tasks
         echo "Running on Fedora Linux..."
