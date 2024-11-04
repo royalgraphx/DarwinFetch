@@ -1,11 +1,11 @@
 [
     {
       "beta": false,
-      "build": "XXXXX",
-      "version": "15.0",
+      "build": "24B2082",
+      "version": "15.1",
       "identifier": "XXX-XXXXX",
       "name": "macOS Sequoia",
-      "command": "-b Mac-937A206F2EE63C01 -m 00000000000000000 -o downloads/15.0_XXXXX/com.apple.recovery.boot download"
+      "command": "-b Mac-937A206F2EE63C01 -m 00000000000000000 -o downloads/15.1_24B2082/com.apple.recovery.boot download"
     },
     {
       "beta": false,
