@@ -5,7 +5,7 @@
       "version": "15.1",
       "identifier": "XXX-XXXXX",
       "name": "macOS Sequoia",
-      "command": "-b Mac-937A206F2EE63C01 -m 00000000000000000 -o downloads/15.1_24B2082/com.apple.recovery.boot download"
+      "command": "-b Mac-7BA5B2D9E42DDD94 -m 00000000000000000 -o downloads/15.1_24B2082/com.apple.recovery.boot download"
     },
     {
       "beta": false,
@@ -13,7 +13,7 @@
       "version": "14.3",
       "identifier": "694-82102",
       "name": "macOS Sonoma",
-      "command": "-b Mac-7BA5B2D9E42DDD94 -m 00000000000000000 -o downloads/14.3_23D52/com.apple.recovery.boot download"
+      "command": "-b Mac-827FAC58A8FDFA22 -m 00000000000000000 -o downloads/14.3_23D52/com.apple.recovery.boot download"
     },
     {
       "beta": false,
