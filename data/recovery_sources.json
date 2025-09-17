@@ -1,6 +1,14 @@
 [
     {
       "beta": false,
+      "build": "25A354",
+      "version": "26.0",
+      "identifier": "XXX-XXXXX",
+      "name": "macOS Tahoe",
+      "command": "-b Mac-CFF7D910A743CAAF -m 00000000000000000 -o downloads/26.0_25A354/com.apple.recovery.boot download"
+    },
+    {
+      "beta": false,
       "build": "24B2082",
       "version": "15.1",
       "identifier": "XXX-XXXXX",
